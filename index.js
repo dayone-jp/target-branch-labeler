@@ -48,6 +48,14 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
             issue_number: pr.number,
             labels: [labelName],
           });
+
+          await octokit.repos.createCommitStatus({
+            ...github.context.repo,
+            sha: pr.head.sha,
+            state: "error",
+            context: "Block Merge to the develop before the Release",
+            description: `This PR is blocked and cannot be merged.`,
+          });
           core.info(`Added "${labelName}" label to PR #${pr.number}`);
         }
       } catch (error) {
