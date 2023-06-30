@@ -5,6 +5,10 @@ inputs:
     description: 'Label name'
     required: true
     default: 'block merge'
+  type:
+    description: 'Action type. Can be one of "add" or "remove"'
+    required: true
+    default: 'add'
   release-source-branch:
     description: 'Develop branch name'
     required: true
