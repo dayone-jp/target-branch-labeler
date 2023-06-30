@@ -9690,6 +9690,7 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
   try {
     const develop = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("release-source-branch");
     const label = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("label");
+    const actionType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("action-type");
 
     const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(process.env.GITHUB_TOKEN ?? "").rest;
 
@@ -9701,13 +9702,25 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
       });
 
       for (const pr of prs) {
-        await octokit.issues.addLabels({
-          ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-          issue_number: pr.number,
-          labels: [label],
-        });
+        if (actionType === "add") {
+          await octokit.issues.addLabels({
+            ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+            issue_number: pr.number,
+            labels: [label],
+          });
+        } else {
+          try {
+            await octokit.issues.removeLabel({
+              ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
+              issue_number: pr.number,
+              name: label,
+            });
+          } catch (e) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No "${label}" label for PR #${pr.number}`);
+          }
+        }
 
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Added "${label}" label to PR #${pr.number}`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`${actionType} "${label}" label to PR #${pr.number}`);
       }
     } catch (error) {
       _actions_core__WEBPACK_IMPORTED_MODULE_0__.error("Error adding label to PRs:", error);
