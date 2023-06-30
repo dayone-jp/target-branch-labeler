@@ -5,14 +5,10 @@ inputs:
     description: 'Label name'
     required: true
     default: 'block merge'
-  release-target-branch:
-    description: 'Master branch name'
-    required: true
-    default: 'master'
   release-source-branch:
     description: 'Develop branch name'
     required: true
-    default: 'develop'  
+    default: 'develop'
 runs:
   using: 'node16'
   main: 'dist/index.js'
