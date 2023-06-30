@@ -6,7 +6,7 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
   try {
     const develop = core.getInput("release-source-branch");
     const label = core.getInput("label");
-    const actionType = core.getInput("action-type");
+    const actionType = core.getInput("type");
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN ?? "").rest;
 

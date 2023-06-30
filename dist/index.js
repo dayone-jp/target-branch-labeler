@@ -9690,7 +9690,7 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
   try {
     const develop = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("release-source-branch");
     const label = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("label");
-    const actionType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("action-type");
+    const actionType = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput("type");
 
     const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(process.env.GITHUB_TOKEN ?? "").rest;
 
