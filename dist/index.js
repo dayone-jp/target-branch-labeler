@@ -9727,10 +9727,18 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
         });
 
         for (const pr of prs) {
-          await octokit.issues.addLabels({
+          // await octokit.issues.addLabels({
+          //   ...github.context.repo,
+          //   issue_number: pr.number,
+          //   labels: [labelName],
+          // });
+
+          await octokit.repos.createCommitStatus({
             ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            issue_number: pr.number,
-            labels: [labelName],
+            sha: pr.head.sha,
+            state: "error",
+            context: "Block Merge to the develop before the Release",
+            description: `This PR is blocked and cannot be merged.`,
           });
           _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Added "${labelName}" label to PR #${pr.number}`);
         }
