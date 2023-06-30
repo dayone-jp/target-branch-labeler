@@ -9696,26 +9696,6 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
 
     /**
      *
-     * @param {number} prNumber
-     * @param {string} labelName
-     */
-    async function hasLabel(prNumber, labelName) {
-      try {
-        const { data: pr } = await octokit.pulls.get({
-          ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-          pull_number: prNumber,
-        });
-
-        return pr.labels.some((label) => label.name === labelName);
-      } catch (error) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.error("Error fetching PR details:", error);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-        return false;
-      }
-    }
-
-    /**
-     *
      * @param {string} labelName
      */
     async function addLabelToDevelopPRs(labelName) {
@@ -9727,19 +9707,19 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
         });
 
         for (const pr of prs) {
-          // await octokit.issues.addLabels({
-          //   ...github.context.repo,
-          //   issue_number: pr.number,
-          //   labels: [labelName],
-          // });
-
-          await octokit.repos.createCommitStatus({
+          await octokit.issues.addLabels({
             ..._actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo,
-            sha: pr.head.sha,
-            state: "error",
-            context: "Block Merge to the develop before the Release",
-            description: `This PR is blocked and cannot be merged.`,
+            issue_number: pr.number,
+            labels: [labelName],
           });
+
+          // await octokit.repos.createCommitStatus({
+          //   ...github.context.repo,
+          //   sha: pr.head.sha,
+          //   state: "error",
+          //   context: `Block Merge to ${develop} before the Release`,
+          //   description: `This PR is blocked and cannot be merged.`,
+          // });
           _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Added "${labelName}" label to PR #${pr.number}`);
         }
       } catch (error) {
@@ -9756,21 +9736,13 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
     });
 
     if (prs.length > 0) {
-      const firstPR = prs[0];
-      _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Release PR: #${firstPR.number}`);
+      const releasePR = prs[0];
+      _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`Release PR: #${releasePR.number}`);
 
-      const hasBlockedLabel = await hasLabel(firstPR.number, label);
-
-      if (hasBlockedLabel) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`PR #${firstPR.number} has the "${label}" label.`);
-
-        await addLabelToDevelopPRs(label);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(
-          `Added "${label}" label to all other PRs targeting the ${develop} branch.`
-        );
-      } else {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`PR #${firstPR.number} does not have the "${label}" label.`);
-      }
+      await addLabelToDevelopPRs(label);
+      _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(
+        `Added "${label}" label to all other PRs targeting the ${develop} branch.`
+      );
     } else {
       _actions_core__WEBPACK_IMPORTED_MODULE_0__.info(`No open PRs from ${develop} to ${master}.`);
     }

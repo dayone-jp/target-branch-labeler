@@ -12,26 +12,6 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
 
     /**
      *
-     * @param {number} prNumber
-     * @param {string} labelName
-     */
-    async function hasLabel(prNumber, labelName) {
-      try {
-        const { data: pr } = await octokit.pulls.get({
-          ...github.context.repo,
-          pull_number: prNumber,
-        });
-
-        return pr.labels.some((label) => label.name === labelName);
-      } catch (error) {
-        core.error("Error fetching PR details:", error);
-        core.setFailed(error.message);
-        return false;
-      }
-    }
-
-    /**
-     *
      * @param {string} labelName
      */
     async function addLabelToDevelopPRs(labelName) {
@@ -43,19 +23,19 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
         });
 
         for (const pr of prs) {
-          // await octokit.issues.addLabels({
-          //   ...github.context.repo,
-          //   issue_number: pr.number,
-          //   labels: [labelName],
-          // });
-
-          await octokit.repos.createCommitStatus({
+          await octokit.issues.addLabels({
             ...github.context.repo,
-            sha: pr.head.sha,
-            state: "error",
-            context: "Block Merge to the develop before the Release",
-            description: `This PR is blocked and cannot be merged.`,
+            issue_number: pr.number,
+            labels: [labelName],
           });
+
+          // await octokit.repos.createCommitStatus({
+          //   ...github.context.repo,
+          //   sha: pr.head.sha,
+          //   state: "error",
+          //   context: `Block Merge to ${develop} before the Release`,
+          //   description: `This PR is blocked and cannot be merged.`,
+          // });
           core.info(`Added "${labelName}" label to PR #${pr.number}`);
         }
       } catch (error) {
@@ -72,21 +52,13 @@ async function addMergeBlockedLabelsToAllTargetPrs() {
     });
 
     if (prs.length > 0) {
-      const firstPR = prs[0];
-      core.info(`Release PR: #${firstPR.number}`);
+      const releasePR = prs[0];
+      core.info(`Release PR: #${releasePR.number}`);
 
-      const hasBlockedLabel = await hasLabel(firstPR.number, label);
-
-      if (hasBlockedLabel) {
-        core.info(`PR #${firstPR.number} has the "${label}" label.`);
-
-        await addLabelToDevelopPRs(label);
-        core.info(
-          `Added "${label}" label to all other PRs targeting the ${develop} branch.`
-        );
-      } else {
-        core.info(`PR #${firstPR.number} does not have the "${label}" label.`);
-      }
+      await addLabelToDevelopPRs(label);
+      core.info(
+        `Added "${label}" label to all other PRs targeting the ${develop} branch.`
+      );
     } else {
       core.info(`No open PRs from ${develop} to ${master}.`);
     }
